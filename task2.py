@@ -1,10 +1,18 @@
 import sys
-import heapq
-def mrg_sort_list():
+
+def max_sum():
     numput1 = int(sys.stdin.readline().strip())
-    alc = list(map(int, sys.stdin.readline().strip().split()))
-    numput2 = int(sys.stdin.readline().strip())
-    bob = list(map(int, sys.stdin.readline().strip().split()) )
-    mrg = heapq.merge(alc, bob)
-    sys.stdout.write(" ".join(map(str, mrg)) + "\n")
-mrg_sort_list()
+    total_number = sys.stdin.readline().strip().split()
+    numbers = []
+    
+    for num_str in total_number:
+        numbers.append(int(num_str))
+    mx_val = float('-inf')
+    mx_pre = numbers[0]
+    
+    for j in range(1, numput1):
+        mx_val = max(mx_val, mx_pre + numbers[j] ** 2)
+        mx_pre = max(mx_pre, numbers[j])
+    sys.stdout.write(str(mx_val) + "\n")
+
+max_sum()
