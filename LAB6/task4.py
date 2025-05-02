@@ -1,47 +1,54 @@
 import sys
-sys.setrecursionlimit(1 << 25)
+from collections import deque
 
-dta = sys.stdin.read().split()
-idx = 0
-N = int(dta[idx])
-idx += 1
-R = int(dta[idx])
-idx += 1
-adj = []
-for i in range(N + 1):
-    adj.append([])
-for edge in range(N - 1):
-    u = int(dta[idx])
-    idx += 1
-    v = int(dta[idx])
-    idx += 1
-    adj[u].append(v)
-    adj[v].append(u)
+def main():
+    input = sys.stdin.read().split()
+    ptr = 0
+    N, R = map(int, input[ptr:ptr+2])
+    ptr += 2
+    adj = [[] for _ in range(N + 1)]
+    for _ in range(N - 1):
+        u, v = map(int, input[ptr:ptr+2])
+        ptr += 2
+        adj[u].append(v)
+        adj[v].append(u)
+    
+    parent = [0] * (N + 1)
+    children = [[] for _ in range(N + 1)]
+    visited = [False] * (N + 1)
+    q = deque([R])
+    visited[R] = True
+    while q:
+        u = q.popleft()
+        for v in adj[u]:
+            if not visited[v]:
+                visited[v] = True
+                parent[v] = u
+                children[u].append(v)
+                q.append(v)
+    
+    size = [1] * (N + 1)
+    stack = [(R, False)]
+    while stack:
+        node, processed = stack.pop()
+        if processed:
+            for child in children[node]:
+                size[node] += size[child]
+        else:
+            stack.append((node, True))
+            for child in reversed(children[node]):
+                stack.append((child, False))
+    
+    Q = int(input[ptr])
+    ptr += 1
+    output = []
+    for _ in range(Q):
+        X = int(input[ptr])
+        ptr += 1
+        output.append(str(size[X]))
+    print('\n'.join(output))
 
-prnt = [0] * (N + 1)
-size = [0] * (N + 1)
-stack = []
-stack.append((R, None, False))
-while stack:
-    node, par, processed = stack.pop()
-    if not processed:
-        prnt[node] = par
-        stack.append((node, par, True))
-        
-        for neighbor in reversed(adj[node]):
-            if neighbor != par:
-                stack.append((neighbor, node, False))
-    else:
-        size[node] = 1
-        for neighbor in adj[node]:
-            if neighbor != par:
-                size[node] += size[neighbor]
 
 
-Q = int(dta[idx])
-idx += 1
-
-for query in range(Q):
-    X = int(dta[idx])
-    idx += 1
-    print(size[X])
+if __name__ == "__main__":
+    main()
