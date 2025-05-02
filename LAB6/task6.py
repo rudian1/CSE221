@@ -1,84 +1,49 @@
-import sys
-sys.setrecursionlimit(1 << 20)
-input = sys.stdin.readline
-print = sys.stdout.write
-
-N = int(input())
-wrds = []
-for i in range(N):
-    wrds.append(input().strip())
-
-
-grph = []
-for i in range(26):
-    grph.append([])
-
-
-in_dgr = [0] * 26
-used = [False] * 26
-invalid = False
-
-
-for i in range(N - 1):
-    w1 = wrds[i]
-    w2 = wrds[i + 1]
-    min_len = min(len(w1), len(w2))
-    found = False
-
-    for j in range(min_len):
-        if w1[j] != w2[j]:
-            a = ord(w1[j]) - ord('a')
-            b = ord(w2[j]) - ord('a')
-            grph[a].append(b)
-            in_dgr[b] += 1
-            found = True
-            break
-
-    if not found and len(w1) > len(w2):
-        invalid = True
-        break
-
-for word in wrds:
-    for ch in word:
-        used[ord(ch) - ord('a')] = True
-
-
-if invalid:
-    print(-1)
-else:
-    order = []
-    queue = []
-
-    for i in range(26):
-        if used[i] and in_dgr[i] == 0:
-            queue.append(i)
-
-    queue.sort()  
-
-    head = 0
-    while head < len(queue):
-        current = queue[head]
-        order.append(current)
-        head += 1
-
-        next_nodes = grph[current]
-        for neighbor in next_nodes:
-            in_dgr[neighbor] -= 1
-
-
-        new_zero = []
-        for neighbor in next_nodes:
-            if in_dgr[neighbor] == 0:
-                new_zero.append(neighbor)
-
-        new_zero.sort()
-        for node in new_zero:
-            if node not in queue[head:]:  
-                queue.append(node)
-
-    if len(order) != sum(used):
-        print(-1)
+def alien_order(words):
+    graph = {}
+    indegree = {}
+    unique_chars = set()
+    
+    for word in words:
+        for char in word:
+            unique_chars.add(char)
+    
+    for char in unique_chars:
+        graph[char] = []
+        indegree[char] = 0
+    
+    for i in range(len(words) - 1):
+        word1 = words[i]
+        word2 = words[i + 1]
+        min_len = min(len(word1), len(word2))
+        if word1[:min_len] == word2[:min_len] and len(word1) > len(word2):
+            return "-1"
+        for j in range(min_len):
+            char1 = word1[j]
+            char2 = word2[j]
+            if char1 != char2:
+                if char2 not in graph[char1]:
+                    graph[char1].append(char2)
+                    indegree[char2] += 1
+                break
+    
+    queue = [char for char in unique_chars if indegree[char] == 0]
+    result = []
+    
+    while queue:
+        queue.sort()
+        current_char = queue.pop(0)
+        result.append(current_char)
+        for neighbor in sorted(graph[current_char]):
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+    
+    if len(result) == len(unique_chars):
+        return ''.join(result)
     else:
-        for i in order:
-            print(chr(i + ord('a')), end='')
-        print()
+        return "-1"
+    
+
+n = int(input())
+words = [input().strip() for _ in range(n)]
+print(alien_order(words))
